@@ -1,9 +1,0 @@
-.root { -fx-font-size: 13px; }
-.section-title { -fx-font-weight: bold; -fx-font-size: 14px; }
-.panel { -fx-background-color: #f4f6f8; -fx-border-color: #dde1e6; -fx-border-width: 0 0 1 0; }
-.drop-zone {
-    -fx-border-color: #8a94a0; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 6;
-    -fx-background-color: white; -fx-text-fill: #55606b;
-}
-.drop-zone.drop-active { -fx-border-color: #1a73e8; -fx-background-color: #e8f0fe; }
-.status-bar { -fx-background-color: #e9ecef; -fx-border-color: #cfd4da; -fx-border-width: 1 0 0 0; }
