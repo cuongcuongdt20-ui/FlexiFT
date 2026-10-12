@@ -4,11 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HexFormat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class HasherTest {
     @Test 
@@ -37,5 +41,50 @@ public class HasherTest {
         byte[] hex1 = Hasher.sha256(new byte[]{1,2,4});
         byte[] hex2 = Hasher.sha256(new byte[]{1,2,4});
         assertArrayEquals(hex1, hex2);
+    }
+
+    @Test
+    void sha256File_khopVoiSha256CuaCaMang(@TempDir Path tmp) throws IOException {
+        byte[] data = new byte[200_000];         
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        assertArrayEquals(Hasher.sha256(data), Hasher.sha256File(file));
+    }
+
+    @Test
+    void khopVoiMang_nhoHon64KB(@TempDir Path tmp) throws IOException {
+        byte[] data = new byte[1000];         
+        Path file = tmp.resolve("test1.bin");
+        Files.write(file, data);
+
+        assertArrayEquals(Hasher.sha256(data), Hasher.sha256File(file));
+    }
+
+    @Test
+    void khopVoiMang_khongChiaHet64KB(@TempDir Path tmp) throws IOException {
+        byte[] data = new byte[200000];         
+        Path file = tmp.resolve("test2.bin");
+        Files.write(file, data);
+
+        assertArrayEquals(Hasher.sha256(data), Hasher.sha256File(file));
+    }
+
+    @Test
+    void khopVoiMang_dungBoi64KB(@TempDir Path tmp) throws IOException {
+        byte[] data = new byte[64 * 1024 * 3];         
+        Path file = tmp.resolve("test3.bin");
+        Files.write(file, data);
+
+        assertArrayEquals(Hasher.sha256(data), Hasher.sha256File(file));
+    }
+
+    @Test
+    void fileRong(@TempDir Path tmp) throws IOException {
+        byte[] data = new byte[0];         
+        Path file = tmp.resolve("test4.bin");
+        Files.write(file, data);
+
+        assertEquals("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", HexFormat.of().formatHex((Hasher.sha256File(file))));
     }
 }
