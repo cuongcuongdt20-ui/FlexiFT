@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HexFormat;
+import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -27,25 +28,26 @@ public class HasherTest {
     }
     @Test 
     void sha256_luonDai32Byte() {
-        byte[] hex = Hasher.sha256("abc".getBytes(StandardCharsets.UTF_8));
-        assertEquals(32, hex.length);
+        byte[] hash = Hasher.sha256("abc".getBytes(StandardCharsets.UTF_8));
+        assertEquals(32, hash.length);
     }
     @Test 
     void sha256_doiMotByteThiKhac() {
-        byte[] hex1 = Hasher.sha256(new byte[]{1,2,4});
-        byte[] hex2 = Hasher.sha256(new byte[]{1,2,3});
-        assertFalse(Arrays.equals(hex1, hex2));
+        byte[] hash1 = Hasher.sha256(new byte[]{1,2,4});
+        byte[] hash2 = Hasher.sha256(new byte[]{1,2,3});
+        assertFalse(Arrays.equals(hash1, hash2));
     }
     @Test 
     void sha256_cungDauVaoCungKetQua() {
-        byte[] hex1 = Hasher.sha256(new byte[]{1,2,4});
-        byte[] hex2 = Hasher.sha256(new byte[]{1,2,4});
-        assertArrayEquals(hex1, hex2);
+        byte[] hash1 = Hasher.sha256(new byte[]{1,2,4});
+        byte[] hash2 = Hasher.sha256(new byte[]{1,2,4});
+        assertArrayEquals(hash1, hash2);
     }
 
     @Test
     void sha256File_khopVoiSha256CuaCaMang(@TempDir Path tmp) throws IOException {
-        byte[] data = new byte[200_000];         
+        byte[] data = new byte[200_000];    
+        new Random(42).nextBytes(data);     
         Path file = tmp.resolve("a.bin");
         Files.write(file, data);
 
@@ -54,7 +56,8 @@ public class HasherTest {
 
     @Test
     void khopVoiMang_nhoHon64KB(@TempDir Path tmp) throws IOException {
-        byte[] data = new byte[1000];         
+        byte[] data = new byte[1000]; 
+        new Random(42).nextBytes(data);        
         Path file = tmp.resolve("test1.bin");
         Files.write(file, data);
 
@@ -63,7 +66,8 @@ public class HasherTest {
 
     @Test
     void khopVoiMang_khongChiaHet64KB(@TempDir Path tmp) throws IOException {
-        byte[] data = new byte[200000];         
+        byte[] data = new byte[64 * 1024 + 1]; 
+        new Random(42).nextBytes(data);        
         Path file = tmp.resolve("test2.bin");
         Files.write(file, data);
 
@@ -72,7 +76,8 @@ public class HasherTest {
 
     @Test
     void khopVoiMang_dungBoi64KB(@TempDir Path tmp) throws IOException {
-        byte[] data = new byte[64 * 1024 * 3];         
+        byte[] data = new byte[64 * 1024 * 3];
+        new Random(42).nextBytes(data);         
         Path file = tmp.resolve("test3.bin");
         Files.write(file, data);
 
