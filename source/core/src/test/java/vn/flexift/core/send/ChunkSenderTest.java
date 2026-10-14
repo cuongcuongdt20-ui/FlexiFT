@@ -7,15 +7,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -145,7 +149,7 @@ public class ChunkSenderTest {
     }
 
     @Test
-    void ghepLai(@TempDir Path tmp) throws IOException {
+    void guiTuanTuGhepLai(@TempDir Path tmp) throws IOException {
         byte[] data = new byte[1050];
         new Random(42).nextBytes(data);
         Path file = tmp.resolve("a.bin");
@@ -193,6 +197,299 @@ public class ChunkSenderTest {
             int[] indexes = {99};
 
             assertThrows(IllegalArgumentException.class, () -> guiVaLayByte(ch, 100, indexes));
+        }
+    }
+
+    @RepeatedTest(20)
+    void songSongDuKhoi(@TempDir Path tmp) throws IOException, InterruptedException {
+
+        byte[] data = new byte[1050];
+        new Random(42).nextBytes(data);
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+            
+            ByteArrayOutputStream[] bos = new ByteArrayOutputStream[3];
+            DataOutputStream[] outs = new DataOutputStream[3];
+            for (int i = 0; i < 3; i++) {
+                bos[i] = new ByteArrayOutputStream();
+                outs[i] = new DataOutputStream(bos[i]);
+            }
+
+            int[] indexes = new int[11];
+            for (int i = 0; i < 11; i++) {
+                indexes[i] = i;
+            }
+
+            ChunkSender.sendParallel(ch, 100, indexes, outs);
+
+            List<ChunkFrame> tatCa = new ArrayList<>();
+            for (ByteArrayOutputStream b : bos) {
+                tatCa.addAll(docHet(b.toByteArray()));
+            }
+            assertEquals(11, tatCa.size());
+
+            Set<Integer> chiSo = new HashSet<>();
+            for (ChunkFrame f : tatCa) {
+                chiSo.add(f.index());
+            }
+            assertEquals(11, chiSo.size());   
+        }
+    }
+
+    @RepeatedTest(20)
+    void songSongNhieuKhoi(@TempDir Path tmp) throws IOException, InterruptedException {
+
+        byte[] data = new byte[10000];
+        new Random(42).nextBytes(data);
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+            
+            ByteArrayOutputStream[] bos = new ByteArrayOutputStream[3];
+            DataOutputStream[] outs = new DataOutputStream[3];
+            for (int i = 0; i < 3; i++) {
+                bos[i] = new ByteArrayOutputStream();
+                outs[i] = new DataOutputStream(bos[i]);
+            }
+
+            int[] indexes = new int[100];
+            for (int i = 0; i < 100; i++) {
+                indexes[i] = i;
+            }
+
+            ChunkSender.sendParallel(ch, 100, indexes, outs);
+
+            List<ChunkFrame> tatCa = new ArrayList<>();
+            for (ByteArrayOutputStream b : bos) {
+                tatCa.addAll(docHet(b.toByteArray()));
+            }
+            assertEquals(100, tatCa.size());
+
+            Set<Integer> chiSo = new HashSet<>();
+            for (ChunkFrame f : tatCa) {
+                chiSo.add(f.index());
+            }
+            assertEquals(100, chiSo.size());   
+        }
+    }
+
+    @RepeatedTest(20)
+    void songSongGhepLai(@TempDir Path tmp) throws IOException, InterruptedException {
+
+        byte[] data = new byte[1050];
+        new Random(42).nextBytes(data);
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+            
+            ByteArrayOutputStream[] bos = new ByteArrayOutputStream[3];
+            DataOutputStream[] outs = new DataOutputStream[3];
+            for (int i = 0; i < 3; i++) {
+                bos[i] = new ByteArrayOutputStream();
+                outs[i] = new DataOutputStream(bos[i]);
+            }
+
+            int[] indexes = new int[11];
+            for (int i = 0; i < 11; i++) {
+                indexes[i] = i;
+            }
+            
+            ChunkSender.sendParallel(ch, 100, indexes, outs);
+            List<ChunkFrame> tatCa = new ArrayList<>();
+
+            for (ByteArrayOutputStream b : bos) {
+                tatCa.addAll(docHet(b.toByteArray()));
+            }
+            
+            byte[] result = new byte[1050];
+
+            for (ChunkFrame f : tatCa) {
+                System.arraycopy(f.payload(), 0, result, f.index()*100, f.payload().length);
+            }
+
+            assertArrayEquals(data, result);
+        }
+    }
+
+    @Test
+    void motKenh(@TempDir Path tmp) throws IOException, InterruptedException {
+
+        byte[] data = new byte[1050];
+        new Random(42).nextBytes(data);
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+            
+            ByteArrayOutputStream[] bos = new ByteArrayOutputStream[1];
+            DataOutputStream[] outs = new DataOutputStream[1];
+            for (int i = 0; i < 1; i++) {
+                bos[i] = new ByteArrayOutputStream();
+                outs[i] = new DataOutputStream(bos[i]);
+            }
+
+            int[] indexes = new int[11];
+            for (int i = 0; i < 11; i++) {
+                indexes[i] = i;
+            }
+            
+            ChunkSender.sendParallel(ch, 100, indexes, outs);
+
+            List<ChunkFrame> tatCa = new ArrayList<>();
+            for (ByteArrayOutputStream b : bos) {
+                tatCa.addAll(docHet(b.toByteArray()));
+            }
+            assertEquals(11, tatCa.size()); 
+        }
+    }
+
+    @Test
+    void danhSachCon2(@TempDir Path tmp) throws IOException, InterruptedException {
+
+        byte[] data = new byte[1050];
+        new Random(42).nextBytes(data);
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+            
+            ByteArrayOutputStream[] bos = new ByteArrayOutputStream[3];
+            DataOutputStream[] outs = new DataOutputStream[3];
+            for (int i = 0; i < 3; i++) {
+                bos[i] = new ByteArrayOutputStream();
+                outs[i] = new DataOutputStream(bos[i]);
+            }
+
+            int[] indexes = {2, 5, 7};
+            
+            ChunkSender.sendParallel(ch, 100, indexes, outs);
+
+            List<ChunkFrame> tatCa = new ArrayList<>();
+            for (ByteArrayOutputStream b : bos) {
+                tatCa.addAll(docHet(b.toByteArray()));
+            }
+
+            Set<Integer> chiSo = new HashSet<>();
+            for (ChunkFrame f : tatCa) {
+                chiSo.add(f.index());
+            }
+            assertEquals(Set.of(2,5,7), chiSo);
+            assertEquals(3, tatCa.size());   
+        }
+    }
+
+    @Test
+    void fileRong2(@TempDir Path tmp) throws IOException, InterruptedException {
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, new byte[0]);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+            
+            ByteArrayOutputStream[] bos = new ByteArrayOutputStream[3];
+            DataOutputStream[] outs = new DataOutputStream[3];
+            for (int i = 0; i < 3; i++) {
+                bos[i] = new ByteArrayOutputStream();
+                outs[i] = new DataOutputStream(bos[i]);
+            }
+
+            int[] indexes = {0};
+            
+            ChunkSender.sendParallel(ch, 100, indexes, outs);
+
+            List<ChunkFrame> tatCa = new ArrayList<>();
+            for (ByteArrayOutputStream b : bos) {
+                tatCa.addAll(docHet(b.toByteArray()));
+            }
+            assertTrue(tatCa.isEmpty());  
+        }
+    }
+
+    @Test
+    void outsRong(@TempDir Path tmp) throws IOException, InterruptedException {
+
+        byte[] data = new byte[1050];
+        new Random(42).nextBytes(data);
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+            
+            DataOutputStream[] outs = new DataOutputStream[0];
+
+            int[] indexes = new int[11];
+            for (int i = 0; i < 11; i++) {
+                indexes[i] = i;
+            }
+            
+            assertThrows(IllegalArgumentException.class, () -> {
+                ChunkSender.sendParallel(ch, 100, indexes, outs);
+            });
+        }
+    }
+
+    @Test
+    void indexesNull(@TempDir Path tmp) throws IOException, InterruptedException {
+
+        byte[] data = new byte[1050];
+        new Random(42).nextBytes(data);
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+            
+            ByteArrayOutputStream[] bos = new ByteArrayOutputStream[3];
+            DataOutputStream[] outs = new DataOutputStream[3];
+            for (int i = 0; i < 3; i++) {
+                bos[i] = new ByteArrayOutputStream();
+                outs[i] = new DataOutputStream(bos[i]);
+            }
+
+            int[] indexes = null;
+            
+            assertThrows(NullPointerException.class, 
+                () -> {
+                    ChunkSender.sendParallel(ch, 100, indexes, outs);
+                }
+            );  
+        }
+    }
+
+    @Test
+    void kenhHong(@TempDir Path tmp) throws IOException, InterruptedException {
+
+        byte[] data = new byte[1050];
+        new Random(42).nextBytes(data);
+        Path file = tmp.resolve("a.bin");
+        Files.write(file, data);
+
+        
+        try (FileChannel ch = FileChannel.open(file, StandardOpenOption.READ)) {
+
+            int[] indexes = new int[11];
+            for (int i = 0; i < 11; i++) {
+                indexes[i] = i;
+            }
+            
+            OutputStream hong = new OutputStream() {
+                @Override
+                public void write(int b) throws IOException {
+                    throw new IOException("kenh dut");
+                }
+            };
+            DataOutputStream[] outs = { new DataOutputStream(hong) };
+            assertThrows(IOException.class, () -> ChunkSender.sendParallel(ch, 100, indexes, outs));  
         }
     }
 }

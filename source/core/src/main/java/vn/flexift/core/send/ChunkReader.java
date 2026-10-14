@@ -4,9 +4,35 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class ChunkReader {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        BlockingQueue<Integer> q = new LinkedBlockingQueue<>();
+        for (int i = 1; i <= 20; i++) {
+            q.put(i);
+        }
+        ExecutorService pool = Executors.newFixedThreadPool(3);
+        Queue<Integer> daLay = new ConcurrentLinkedQueue<>();
+        for (int t = 0; t < 3; t++) {
+            pool.submit(() -> {
+                while (true) {
+                    Integer n = q.poll();
+                    if (n == null) break;
+                    System.out.println(Thread.currentThread().getName() + " " + n);
+                    daLay.add(n);
+                }
+            });
+        }
+        pool.shutdown();
+        pool.awaitTermination(1, TimeUnit.MINUTES);
+        System.out.println(daLay.size());
     }
 
     public static byte[] readChunk(FileChannel ch, int index, int chunkSize) throws IOException {
